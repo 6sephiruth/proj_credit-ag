@@ -12,6 +12,8 @@ from PIL import Image
 from sklearn.ensemble import IsolationForest
 from sklearn.metrics import accuracy_score
 
+from utils import *
+
 # designate gpu
 os.environ['CUDA_VISIBLE_DEVICES'] = '3'
 os.environ['TF_DETERMINISTIC_OPS'] = '1'
@@ -27,6 +29,10 @@ random.seed(SEED)
 os.environ['PYTHONHASHSEED'] = str(SEED)
 np.random.seed(SEED)
 tf.random.set_seed(SEED)
+
+# base, gaussian
+noise_method = 'gaussian'
+
 
 # Train dataset
 x_train = pd.read_csv('./datasets/train.csv')
@@ -55,13 +61,32 @@ acc_score = accuracy_score(pred, y_validation)
 print(acc_score)
 
 
-try:
-    shap_values = pickle.load(open('./shap_values','rb'))
-except:
-    explainer = shap.TreeExplainer(model, x_train, seed=SEED)
-    shap_values = explainer.shap_values(x_train)
+#### noise augmentation ####
+x_aug = noise_augmentation(noise_method, x_train)
 
-    pickle.dump(shap_values, open('./shap_values','wb'))
+x_total = np.concatenate([x_train, x_aug])
 
-shap.plots.bar(shap_values)
-# plt.savefig(shap_img, 'shap_img.png')
+model2 = IsolationForest(random_state=0).fit(x_total)
+pred = model2.predict(x_validation)
+pred = get_pred_label(pred)
+
+acc_score = accuracy_score(pred, y_validation)
+print(acc_score)
+
+
+# try:
+#     shap_values = pickle.load(open('./shap_values','rb'))
+# except Exception:
+#     explainer = shap.TreeExplainer(model, x_train, seed=SEED)
+#     shap_values = explainer.shap_values(x_train)
+
+#     shap.plots.bar(shap.Explanation(shap_values))
+
+# #     pickle.dump(shap_values, open('./shap_values','wb'))
+
+# explainer = shap.TreeExplainer(model, x_train, seed=SEED)
+# shap_values = explainer.shap_values(x_train)
+# shap.plots.bar(shap.Explanation(shap_values))
+
+# # plt.show(shap.plots.bar(shap_values))
+# plt.savefig('./shap_img.png')
