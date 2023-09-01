@@ -1,5 +1,13 @@
 __pycache__
+dacon/__pycache__
 dacon/datasets
-datacon/dacon_result
-kaggle/datasets
+dacon/dacon_result
+dacon/*.png
 
+kaggle/__pycache__
+kaggle/datasets
+kaggle/*.png
+
+new_kaggle/__pycache__
+new_kaggle/datasets
+new_kaggle/*.png
